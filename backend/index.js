@@ -14,7 +14,7 @@ let app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin:"https://github.com/Noobie31/StayLoft",
+    origin:"http://localhost:5173",
     credentials:true
 }))
 
