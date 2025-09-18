@@ -10,7 +10,7 @@ const isAuth = async (req, res, next) => {
         try {
             verifyToken = jwt.verify(token, process.env.JWT_SECRET);
         } catch (err) {
-            return res.status(401).json({ message: "User doesn't have a valid token" });
+            return res.status(401).json({ message: "User doesn't have a valid token fk off" });
         }
         req.userId = verifyToken.userId;
         next();
