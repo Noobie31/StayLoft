@@ -49,9 +49,9 @@ function Nav() {
     const handleCategory = (key) => {
         setActiveCategory(key)
         if (key === 'trending') {
-            setNewListData(listingData)
+            setNewListData(Array.isArray(listingData) ? listingData : [])
         } else {
-            setNewListData(listingData.filter(l => l.category === key))
+            setNewListData(Array.isArray(listingData) ? listingData.filter(l => l.category === key) : [])
         }
     }
 
@@ -119,7 +119,7 @@ function Nav() {
                     {searchData?.length > 0 && (
                         <div className='absolute top-full mt-2 w-full rounded-2xl shadow-xl border overflow-hidden'
                             style={{ background: '#fff', borderColor: '#f0ece6', zIndex: 50 }}>
-                            {searchData.map(item => (
+                            {Array.isArray(searchData) && searchData.map(item => (
                                 <button key={item._id}
                                     onClick={() => handleSearchClick(item._id)}
                                     className='w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-amber-50 transition-colors border-b last:border-b-0'
@@ -209,7 +209,7 @@ function Nav() {
                 {searchData?.length > 0 && (
                     <div className='mt-1 rounded-2xl shadow-xl border overflow-hidden'
                         style={{ background: '#fff', borderColor: '#f0ece6' }}>
-                        {searchData.map(item => (
+                        {Array.isArray(searchData) && searchData.map(item => (
                             <button key={item._id}
                                 onClick={() => handleSearchClick(item._id)}
                                 className='w-full px-4 py-2.5 text-left flex items-center gap-3 border-b last:border-b-0'

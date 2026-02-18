@@ -47,7 +47,7 @@ function MyListing() {
           </div>
         ) : (
           <div className='grid gap-6' style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-            {userData?.listing?.map(list => (
+            {Array.isArray(userData?.listing) && userData.listing.map(list => (
               <Card
                 key={list._id}
                 title={list.title}

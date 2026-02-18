@@ -77,7 +77,11 @@ function ListingContext({ children }) {
         }
         try {
             let result = await axios.get(serverUrl + `/api/listing/search?query=${data}`)
-            setSearchData(result.data)
+            if (Array.isArray(result.data)) {
+                setSearchData(result.data)
+            } else {
+                setSearchData([])
+            }
         } catch (error) {
             setSearchData([])
         }
@@ -86,8 +90,13 @@ function ListingContext({ children }) {
     const getListing = async () => {
         try {
             let result = await axios.get(serverUrl + "/api/listing/get")
-            setListingData(result.data)
-            setNewListData(result.data)
+            if (Array.isArray(result.data)) {
+                setListingData(result.data)
+                setNewListData(result.data)
+            } else {
+                setListingData([])
+                setNewListData([])
+            }
         } catch (error) {
             console.log(error)
         }

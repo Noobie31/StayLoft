@@ -290,7 +290,7 @@ function ViewCard() {
                                 </h3>
                                 {cardDetails.bookedDates?.length > 0 ? (
                                     <div className='space-y-2'>
-                                        {cardDetails.bookedDates.map((b, i) => {
+                                        {Array.isArray(cardDetails.bookedDates) && cardDetails.bookedDates.map((b, i) => {
                                             const ci = new Date(b.checkIn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                                             const co = new Date(b.checkOut).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                                             return (

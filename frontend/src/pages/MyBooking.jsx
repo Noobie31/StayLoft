@@ -110,7 +110,7 @@ function BookingHistoryCard({ booking }) {
 function MyBooking() {
   let navigate = useNavigate()
   let { userData } = useContext(userDataContext)
-  const bookings = userData?.booking || []
+  const bookings = Array.isArray(userData?.booking) ? userData.booking : []
 
   // Sort: upcoming first, then active, then past
   const sorted = [...bookings].sort((a, b) => {
@@ -118,8 +118,8 @@ function MyBooking() {
     return aIn - bIn
   })
 
-  const upcoming = sorted.filter(b => b.checkIn && new Date(b.checkIn) > new Date())
-  const past = sorted.filter(b => b.checkOut && new Date(b.checkOut) < new Date())
+  const upcoming = Array.isArray(sorted) ? sorted.filter(b => b.checkIn && new Date(b.checkIn) > new Date()) : []
+  const past = Array.isArray(sorted) ? sorted.filter(b => b.checkOut && new Date(b.checkOut) < new Date()) : []
 
   return (
     <div style={{ background: '#faf8f5', minHeight: '100vh', fontFamily: "'Georgia', serif" }}>
@@ -161,7 +161,7 @@ function MyBooking() {
                   Upcoming
                 </h2>
                 <div className='space-y-3'>
-                  {upcoming.map(b => <BookingHistoryCard key={b._id} booking={b} />)}
+                  {Array.isArray(upcoming) && upcoming.map(b => <BookingHistoryCard key={b._id} booking={b} />)}
                 </div>
               </section>
             )}
@@ -172,7 +172,7 @@ function MyBooking() {
                   Past Stays
                 </h2>
                 <div className='space-y-3'>
-                  {past.map(b => <BookingHistoryCard key={b._id} booking={b} />)}
+                  {Array.isArray(past) && past.map(b => <BookingHistoryCard key={b._id} booking={b} />)}
                 </div>
               </section>
             )}
