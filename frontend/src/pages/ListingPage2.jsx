@@ -1,71 +1,108 @@
-import React from 'react'
-import { FaArrowLeftLong } from "react-icons/fa6";
+import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { GiFamilyHouse } from "react-icons/gi";
-import { MdBedroomParent } from "react-icons/md";
-
-import { MdOutlinePool } from "react-icons/md";
-import { GiWoodCabin } from "react-icons/gi";
+import { GiFamilyHouse, GiWoodCabin } from "react-icons/gi";
+import { MdBedroomParent, MdOutlinePool } from "react-icons/md";
 import { SiHomeassistantcommunitystore } from "react-icons/si";
-
 import { IoBedOutline } from "react-icons/io5";
-
 import { FaTreeCity } from "react-icons/fa6";
 import { BiBuildingHouse } from "react-icons/bi";
-import { useContext } from 'react';
 import { listingDataContext } from '../Context/ListingContext';
 
-function ListingPage2() {
+const steps = ['Property Info', 'Category', 'Preview']
 
-    let navigate = useNavigate()
-    let {category,setCategory} = useContext(listingDataContext)
+function StepBar({ current }) {
   return (
-    <div className='w-[100%] h-[100vh] bg-white flex items-center justify-center relative overflow-auto '>
-         <div className='w-[50px] h-[50px] bg-[red] cursor-pointer absolute top-[5%] left-[20px] rounded-[50%] flex items-center justify-center' onClick={()=>navigate("/listingpage1")}><FaArrowLeftLong className='w-[25px] h-[25px] text-[white]' /></div>
-        <div className='w-[200px] h-[50px] text-[20px] bg-[#f14242] text-[white] flex items-center justify-center rounded-[30px] absolute top-[5%] right-[10px] shadow-lg'> Set Your Category </div>
-
-        <div className='max-w-[900px] w-[100%] h-[550px] overflow-auto bg-white flex items-center justify-start flex-col gap-[40px] mt-[30px] '>
-        <h1 className='text-[18px] text-[black] md:text-[30px] px-[10px] '>Which of these best describes your place?</h1>
-        
-        <div className='max-w-[900px] w-[100%] h-[100%] flex flex-wrap items-center justify-center gap-[15px] md:w-[70%]'>
-
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "villa" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("villa")}>
-            <GiFamilyHouse className='w-[30px] h-[30px] text-[black]' /><h3>Villa</h3>
+    <div className='flex items-center gap-0 mb-8'>
+      {steps.map((s, i) => (
+        <React.Fragment key={s}>
+          <div className='flex flex-col items-center gap-1'>
+            <div className='w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold'
+              style={{ background: i <= current ? '#e11d48' : '#f0ece6', color: i <= current ? '#fff' : '#9c7a5a' }}>
+              {i + 1}
             </div>
+            <span className='text-xs hidden md:block' style={{ color: i === current ? '#1a0a00' : '#9c7a5a' }}>{s}</span>
+          </div>
+          {i < steps.length - 1 && (
+            <div className='flex-1 h-0.5 mx-2 mb-4' style={{ background: i < current ? '#e11d48' : '#f0ece6' }} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  )
+}
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "farmHouse" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("farmHouse")}>
-            <FaTreeCity className='w-[30px] h-[30px] text-[black]' /><h3>Farm House</h3>
-            </div>
+const categories = [
+  { key: 'villa', label: 'Villa', icon: GiFamilyHouse, desc: 'Luxury standalone home' },
+  { key: 'farmHouse', label: 'Farm House', icon: FaTreeCity, desc: 'Rural escape with land' },
+  { key: 'poolHouse', label: 'Pool House', icon: MdOutlinePool, desc: 'Private pool included' },
+  { key: 'rooms', label: 'Rooms', icon: MdBedroomParent, desc: 'Private room rental' },
+  { key: 'flat', label: 'Flat', icon: BiBuildingHouse, desc: 'Apartment or flat' },
+  { key: 'pg', label: 'PG', icon: IoBedOutline, desc: 'Paying guest setup' },
+  { key: 'cabin', label: 'Cabin', icon: GiWoodCabin, desc: 'Forest or hill retreat' },
+  { key: 'shops', label: 'Shop / Commercial', icon: SiHomeassistantcommunitystore, desc: 'Commercial space' },
+]
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "poolHouse" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("poolHouse")}>
-            <MdOutlinePool className='w-[30px] h-[30px] text-[black]' /><h3>Pool House</h3>
-            </div>
+function ListingPage2() {
+  let navigate = useNavigate()
+  let { category, setCategory } = useContext(listingDataContext)
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "rooms" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("rooms")}>
-            <MdBedroomParent className='w-[30px] h-[30px] text-[black]' /><h3>Rooms</h3>
-            </div>
+  return (
+    <div style={{ minHeight: '100vh', background: '#faf8f5', fontFamily: "'Georgia',serif" }}>
+      <div className='flex items-center gap-3 px-4 md:px-8 py-4 sticky top-0 z-10'
+        style={{ background: 'rgba(250,248,245,0.95)', borderBottom: '1px solid #f0ece6', backdropFilter: 'blur(8px)' }}>
+        <button onClick={() => navigate("/listingpage1")}
+          className='w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0'
+          style={{ background: '#f5f0eb', color: '#3d1a00' }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <span className='font-bold text-base' style={{ color: '#1a0a00' }}>List your home</span>
+        <span className='ml-auto text-xs px-3 py-1 rounded-full' style={{ background: '#f5f0eb', color: '#6b3a1f' }}>Step 2 of 3</span>
+      </div>
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "flat" ?"border-3 border-[#8b8b8b]" : ""}`}onClick={()=>setCategory("flat")}>
-            <BiBuildingHouse className='w-[30px] h-[30px] text-[black]' /><h3>Flat</h3>
-            </div>
+      <div className='max-w-2xl mx-auto px-4 md:px-8 py-6'>
+        <StepBar current={1} />
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "pg" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("pg")}>
-            <IoBedOutline className='w-[30px] h-[30px] text-[black]' /><h3>PG</h3>
-            </div>
+        <div className='rounded-2xl p-6' style={{ background: '#fff', border: '1px solid #f0ece6' }}>
+          <h2 className='text-xl font-bold mb-1' style={{ color: '#1a0a00' }}>What type of place is it?</h2>
+          <p className='text-sm mb-5' style={{ color: '#9c7a5a' }}>Pick the category that best describes your property</p>
 
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "cabin" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("cabin")}>
-            <GiWoodCabin className='w-[30px] h-[30px] text-[black]' /><h3>Cabin</h3>
-            </div>
-
-            <div className={`w-[180px] h-[100px] flex justify-center items-center flex-col cursor-pointer border-[2px] hover:border-[#a6a5a5] text-[16px] rounded-lg ${category == "shops" ?"border-3 border-[#8b8b8b]" : ""}`} onClick={()=>setCategory("shops")}>
-            <SiHomeassistantcommunitystore className='w-[30px] h-[30px] text-[black]' /><h3>Shops</h3>
-            </div>
-
-            
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+            {categories.map(cat => {
+              const Icon = cat.icon
+              const active = category === cat.key
+              return (
+                <button key={cat.key} onClick={() => setCategory(cat.key)}
+                  className='flex flex-col items-center gap-2 p-4 rounded-2xl text-center transition-all duration-200'
+                  style={{
+                    border: active ? '2px solid #e11d48' : '1.5px solid #f0ece6',
+                    background: active ? '#fff5f7' : '#faf8f5',
+                    color: active ? '#e11d48' : '#6b5a4e'
+                  }}>
+                  <Icon size={28} />
+                  <div>
+                    <p className='text-xs font-semibold' style={{ color: active ? '#e11d48' : '#1a0a00' }}>{cat.label}</p>
+                    <p className='text-xs mt-0.5 leading-tight hidden md:block' style={{ color: '#9c7a5a' }}>{cat.desc}</p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
-        <button className='px-[50px] py-[10px] bg-[red] text-[white] text-[18px] md:px-[100px] rounded-lg absolute right-[5%] bottom-[5%]' onClick={()=>navigate("/listingpage3")} disabled={!category}>Next</button>
-        </div>
-      
+
+        <button
+          onClick={() => navigate("/listingpage3")}
+          disabled={!category}
+          className='w-full mt-5 py-3.5 rounded-xl font-semibold text-white text-sm transition-all'
+          style={{
+            background: category ? 'linear-gradient(135deg, #e11d48, #be123c)' : '#d4c4b8',
+            cursor: category ? 'pointer' : 'not-allowed',
+            boxShadow: category ? '0 4px 16px rgba(225,29,72,0.25)' : 'none'
+          }}>
+          Next → Preview
+        </button>
+      </div>
     </div>
   )
 }

@@ -1,179 +1,261 @@
-import React, { useContext, useEffect, useState } from 'react'
-import logo from '../assets/logo.png'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { FiSearch } from "react-icons/fi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { CgProfile } from "react-icons/cg";
-import { MdWhatshot } from "react-icons/md";
-import { GiFamilyHouse } from "react-icons/gi";
-import { MdBedroomParent } from "react-icons/md";
-import { MdOutlinePool } from "react-icons/md";
-import { GiWoodCabin } from "react-icons/gi";
+import { MdWhatshot, MdBedroomParent, MdOutlinePool } from "react-icons/md";
+import { GiFamilyHouse, GiWoodCabin } from "react-icons/gi";
 import { SiHomeassistantcommunitystore } from "react-icons/si";
 import { IoBedOutline } from "react-icons/io5";
-import { FaK, FaTreeCity } from "react-icons/fa6";
+import { FaTreeCity } from "react-icons/fa6";
 import { BiBuildingHouse } from "react-icons/bi";
 import { useNavigate } from 'react-router-dom';
 import { authDataContext } from '../Context/AuthContext';
 import axios from 'axios';
 import { userDataContext } from '../Context/UserContext';
 import { listingDataContext } from '../Context/ListingContext';
+
+const categories = [
+    { key: 'trending', label: 'Trending', icon: MdWhatshot },
+    { key: 'villa', label: 'Villa', icon: GiFamilyHouse },
+    { key: 'farmHouse', label: 'Farm House', icon: FaTreeCity },
+    { key: 'poolHouse', label: 'Pool House', icon: MdOutlinePool },
+    { key: 'rooms', label: 'Rooms', icon: MdBedroomParent },
+    { key: 'flat', label: 'Flat', icon: BiBuildingHouse },
+    { key: 'pg', label: 'PG', icon: IoBedOutline },
+    { key: 'cabin', label: 'Cabins', icon: GiWoodCabin },
+    { key: 'shops', label: 'Shops', icon: SiHomeassistantcommunitystore },
+]
+
 function Nav() {
-    let [showpopup,setShowpopup]= useState(false)
-    let {userData ,setUserData}= useContext(userDataContext)
+    let [showPopup, setShowPopup] = useState(false)
+    let { userData, setUserData } = useContext(userDataContext)
     let navigate = useNavigate()
-    let {serverUrl} = useContext(authDataContext)
-    let [cate,setCate]= useState()
-    let {listingData,setListingData,setNewListData,newListData,searchData,handleSearch,handleViewCard}=useContext(listingDataContext)
-    let [input,setInput]=useState("")
+    let { serverUrl } = useContext(authDataContext)
+    let [activeCategory, setActiveCategory] = useState('trending')
+    let { listingData, setNewListData, searchData, handleSearch, handleViewCard, setSearchData } = useContext(listingDataContext)
+    let [input, setInput] = useState("")
+    let searchRef = useRef(null)
+
     const handleLogOut = async () => {
         try {
-            let result = await axios.post( serverUrl + "/api/auth/logout", {withCredentials:true})
+            await axios.post(serverUrl + "/api/auth/logout", {}, { withCredentials: true })
             setUserData(null)
-
-            console.log(result)
+            setShowPopup(false)
         } catch (error) {
             console.log(error)
         }
-        
     }
-    const handleCategory = (category)=>{
-       setCate(category)
-       if(category=="trending"){
-        setNewListData(listingData)
-       }
-       else{
-       setNewListData(listingData.filter((list)=>list.category==category))}
 
-       
-
-    }
-    const handleClick = (id) => {
-        if (userData) {
-            handleViewCard(id)
-        }
-        else {
-            navigate("/login")
+    const handleCategory = (key) => {
+        setActiveCategory(key)
+        if (key === 'trending') {
+            setNewListData(listingData)
+        } else {
+            setNewListData(listingData.filter(l => l.category === key))
         }
     }
-    useEffect(()=>{
-      handleSearch(input)
-    },[input])
+
+    const handleSearchClick = (id) => {
+        setSearchData([])
+        setInput("")
+        if (userData) handleViewCard(id)
+        else navigate("/login")
+    }
+
+    useEffect(() => {
+        const timer = setTimeout(() => handleSearch(input), 300)
+        return () => clearTimeout(timer)
+    }, [input])
+
+    // Close search on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (searchRef.current && !searchRef.current.contains(e.target)) {
+                setSearchData([])
+            }
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [])
 
     return (
+        <div className='fixed top-0 w-full z-20' style={{ background: '#fff', fontFamily: "'Georgia', serif" }}>
+            {/* Top bar */}
+            <div className='w-full border-b px-4 md:px-8 flex items-center justify-between gap-4'
+                style={{ height: '72px', borderColor: '#f0ece6' }}>
 
-        <div className='fixed top-0 bg-[white] z-[20]'>
-            <div className='w-[100vw] min-h-[80px]  border-b-[1px] border-[#dcdcdc] px-[20px] flex items-center justify-between md:px-[40px] '>
-                <div><img src={logo} alt="" className='w-[130px]' /></div>
+                {/* Logo */}
+                <button onClick={() => navigate("/")}
+                    className='flex items-center gap-2 flex-shrink-0'
+                    style={{ color: '#e11d48' }}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                    <span className='text-xl font-bold hidden sm:block' style={{ color: '#e11d48', letterSpacing: '-0.01em' }}>
+                        StayLoft
+                    </span>
+                </button>
 
-                <div className='w-[35%] relative hidden md:block '>
-                    <input type="text" className='w-[100%] px-[30px] py-[10px] border-[2px] border-[#bdbaba] outline-none overflow-auto rounded-[30px] text-[17px]' placeholder='Any Where  |  Any Location  |  Any City 'onChange={(e)=>setInput(e.target.value)} value={input}/>
-                    <button className='absolute p-[10px] rounded-[50px] bg-[red] right-[3%] top-[5px]'><FiSearch className='w-[20px] h-[20px] text-[white]' /></button>
-                </div>
-                <div className='flex items-center justify-center    gap-[10px] relative'>
-                    <span className='text-[18px] cursor-pointer rounded-[50px] hover:bg-[#ded9d9] px-[8px] py-[5px] hidden md:block' onClick={()=>navigate("/listingpage1")}>List your home</span>
-                    <button className='px-[20px] py-[10px] flex items-center justify-center gap-[5px] border-[1px] border-[#8d8c8c] rounded-[50px] hover:shadow-lg' onClick={()=>setShowpopup(prev =>!prev)}>
-                        <span><GiHamburgerMenu className='w-[20px] h-[20px]' /></span>
-                        {userData == null && <span><CgProfile className='w-[23px] h-[23px]' /></span>}
-                        {userData != null && <span className='w-[30px] h-[30px] bg-[#080808] text-[white] rounded-full flex items-center justify-center'>{userData?.name.slice(0,1)}</span>}
-                    </button>
-                    {showpopup && <div className='w-[220px] h-[250px] absolute bg-slate-50 top-[110%] right-[3%] border-[1px] border-[#aaa9a9] z-10 rounded-lg md:right-[10%]'>
-                        <ul className='w-[100%] h-[100%] text-[17px] flex items-start justify-around flex-col py-[10px]'>
-                            {!userData && <li className='w-[100%] px-[15px] py-[10px] hover:bg-[#f4f3f3] cursor-pointer' onClick={()=>{navigate("/login");setShowpopup(false)}}>Login</li>}
-                            {userData && <li className='w-[100%] px-[15px] py-[10px] hover:bg-[#f4f3f3] cursor-pointer' onClick={()=>{handleLogOut();setShowpopup(false)}}>Logout</li>}
-                            <div className='w-[100%] h-[1px] bg-[#c1c0c0]'></div>
-                            <li className='w-[100%] px-[15px] py-[10px] hover:bg-[#f4f3f3] cursor-pointer' onClick={()=>{navigate("/listingpage1");setShowpopup(false)}}>List your Home</li>
-                            <li className='w-[100%] px-[15px] py-[10px] hover:bg-[#f4f3f3] cursor-pointer'onClick={()=>{navigate("/mylisting");setShowpopup(false)}}>My Listing</li>
-                            <li className='w-[100%] px-[15px] py-[10px] hover:bg-[#f4f3f3] cursor-pointer'  onClick={()=>{navigate("/mybooking");setShowpopup(false)}}>MY Booking</li>
-                        </ul>
-
-                    </div>}
-                </div>
-               {searchData?.length>0 && <div className='w-[100vw] h-[450px]  flex flex-col gap-[20px] absolute top-[50%]  overflow-auto left-[0]   justify-start  items-center'>
-                    <div className='max-w-[700px] w-[100vw] h-[300px] overflow-hidden  flex flex-col bg-[#fefdfd] p-[20px] rounded-lg border-[1px] border-[#a2a1a1] cursor-pointer'>
-                        {
-                            searchData.map((search)=>(
-                            <div className='border-b border-[black] p-[10px]' onClick={()=>handleClick(search._id)}>
-                                {search.title} in {search.landMark},{search.city}
-                                 </div>
-                            ))
-
-                        }
+                {/* Search bar */}
+                <div className='flex-1 max-w-md relative hidden md:block' ref={searchRef}>
+                    <div className='flex items-center rounded-full border-2 px-4 py-2 transition-all duration-200'
+                        style={{ borderColor: input ? '#e11d48' : '#e8ddd4', background: '#faf8f5' }}>
+                        <FiSearch style={{ color: '#9c7a5a' }} size={16} className='flex-shrink-0' />
+                        <input
+                            type="text"
+                            className='flex-1 bg-transparent outline-none px-3 text-sm'
+                            style={{ color: '#1a0a00', fontFamily: "'Georgia', serif" }}
+                            placeholder='Search by city, landmark, or title...'
+                            onChange={e => setInput(e.target.value)}
+                            value={input}
+                        />
+                        {input && (
+                            <button onClick={() => { setInput(""); setSearchData([]) }}
+                                style={{ color: '#9c7a5a' }} className='text-lg leading-none'>×</button>
+                        )}
                     </div>
-                </div>}
-               
-               
 
+                    {/* Search results dropdown */}
+                    {searchData?.length > 0 && (
+                        <div className='absolute top-full mt-2 w-full rounded-2xl shadow-xl border overflow-hidden'
+                            style={{ background: '#fff', borderColor: '#f0ece6', zIndex: 50 }}>
+                            {searchData.map(item => (
+                                <button key={item._id}
+                                    onClick={() => handleSearchClick(item._id)}
+                                    className='w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-amber-50 transition-colors border-b last:border-b-0'
+                                    style={{ borderColor: '#f0ece6' }}>
+                                    <div className='w-10 h-10 rounded-lg overflow-hidden flex-shrink-0'>
+                                        <img src={item.image1} alt="" className='w-full h-full object-cover' />
+                                    </div>
+                                    <div className='min-w-0'>
+                                        <p className='text-sm font-semibold truncate' style={{ color: '#1a0a00' }}>{item.title}</p>
+                                        <p className='text-xs truncate' style={{ color: '#9c7a5a' }}>{item.landMark}, {item.city}</p>
+                                    </div>
+                                    <span className='ml-auto text-xs font-semibold flex-shrink-0' style={{ color: '#e11d48' }}>
+                                        ₹{item.rent?.toLocaleString()}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right actions */}
+                <div className='flex items-center gap-3 relative'>
+                    <button
+                        onClick={() => navigate("/listingpage1")}
+                        className='hidden md:block text-sm font-semibold px-4 py-2 rounded-full transition-colors duration-200'
+                        style={{ color: '#3d1a00' }}
+                        onMouseEnter={e => e.target.style.background = '#f5f0eb'}
+                        onMouseLeave={e => e.target.style.background = 'transparent'}>
+                        List your home
+                    </button>
+
+                    <button
+                        onClick={() => setShowPopup(p => !p)}
+                        className='flex items-center gap-2.5 px-3 py-2 rounded-full border-2 transition-all duration-200 hover:shadow-md'
+                        style={{ borderColor: '#e8ddd4' }}>
+                        <GiHamburgerMenu size={16} style={{ color: '#1a0a00' }} />
+                        {userData
+                            ? <div className='w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white'
+                                style={{ background: 'linear-gradient(135deg, #e11d48, #be123c)' }}>
+                                {userData.name?.slice(0, 1).toUpperCase()}
+                            </div>
+                            : <CgProfile size={20} style={{ color: '#1a0a00' }} />
+                        }
+                    </button>
+
+                    {/* Dropdown menu */}
+                    {showPopup && (
+                        <div className='absolute top-full right-0 mt-2 w-56 rounded-2xl shadow-xl border overflow-hidden'
+                            style={{ background: '#fff', borderColor: '#f0ece6', zIndex: 50 }}>
+                            {userData && (
+                                <div className='px-4 py-3 border-b' style={{ borderColor: '#f0ece6' }}>
+                                    <p className='text-sm font-semibold' style={{ color: '#1a0a00' }}>{userData.name}</p>
+                                    <p className='text-xs truncate' style={{ color: '#9c7a5a' }}>{userData.email}</p>
+                                </div>
+                            )}
+                            <div className='py-1'>
+                                {!userData && (
+                                    <MenuBtn label="Login" onClick={() => { navigate("/login"); setShowPopup(false) }} />
+                                )}
+                                {userData && (
+                                    <MenuBtn label="Logout" onClick={handleLogOut} danger />
+                                )}
+                                <div style={{ height: '1px', background: '#f0ece6', margin: '4px 0' }} />
+                                <MenuBtn label="List your Home" onClick={() => { navigate("/listingpage1"); setShowPopup(false) }} />
+                                <MenuBtn label="My Listing" onClick={() => { navigate("/mylisting"); setShowPopup(false) }} />
+                                <MenuBtn label="My Bookings" onClick={() => { navigate("/mybooking"); setShowPopup(false) }} />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-            <div className='w-[100%] h-[60px] flex items-center justify-center  md:hidden 
-            '>
-                <div className='w-[80%] relative '>
-                    <input type="text" className='w-[100%] px-[30px] py-[10px] border-[2px] border-[#bdbaba] outline-none overflow-auto rounded-[30px] text-[17px]' placeholder='Any Where  |  Any Location  |  Any City ' onChange={(e)=>setInput(e.target.value)} value={input} />
-                    <button className='absolute p-[10px] rounded-[50px] bg-[red] right-[3%] top-[5px]'><FiSearch className='w-[20px] h-[20px] text-[white]' /></button>
+
+            {/* Mobile search */}
+            <div className='md:hidden px-4 py-2 border-b' style={{ borderColor: '#f0ece6' }} ref={searchRef}>
+                <div className='flex items-center rounded-full border-2 px-4 py-2'
+                    style={{ borderColor: input ? '#e11d48' : '#e8ddd4', background: '#faf8f5' }}>
+                    <FiSearch style={{ color: '#9c7a5a' }} size={16} />
+                    <input
+                        type="text"
+                        className='flex-1 bg-transparent outline-none px-3 text-sm'
+                        style={{ color: '#1a0a00', fontFamily: "'Georgia', serif" }}
+                        placeholder='Search city, landmark...'
+                        onChange={e => setInput(e.target.value)}
+                        value={input}
+                    />
                 </div>
+                {searchData?.length > 0 && (
+                    <div className='mt-1 rounded-2xl shadow-xl border overflow-hidden'
+                        style={{ background: '#fff', borderColor: '#f0ece6' }}>
+                        {searchData.map(item => (
+                            <button key={item._id}
+                                onClick={() => handleSearchClick(item._id)}
+                                className='w-full px-4 py-2.5 text-left flex items-center gap-3 border-b last:border-b-0'
+                                style={{ borderColor: '#f0ece6' }}>
+                                <p className='text-sm' style={{ color: '#1a0a00' }}>{item.title} — {item.city}</p>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Category bar */}
+            <div className='w-full overflow-x-auto border-b' style={{ borderColor: '#f0ece6' }}>
+                <div className='flex items-center gap-1 px-4 md:px-8 py-2 min-w-max'>
+                    {categories.map(cat => {
+                        const Icon = cat.icon
+                        const isActive = activeCategory === cat.key
+                        return (
+                            <button key={cat.key}
+                                onClick={() => handleCategory(cat.key)}
+                                className='flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 flex-shrink-0'
+                                style={{
+                                    background: isActive ? '#fff5f5' : 'transparent',
+                                    color: isActive ? '#e11d48' : '#6b5a4e',
+                                    borderBottom: isActive ? '2px solid #e11d48' : '2px solid transparent'
+                                }}>
+                                <Icon size={22} />
+                                <span className='text-xs font-medium whitespace-nowrap'>{cat.label}</span>
+                            </button>
+                        )
+                    })}
                 </div>
-
-          
-           
-                
-
-            <div className='w-[100vw] h-[85px] bg-white flex items-center justify-start cursor-pointer gap-[40px] overflow-auto md:justify-center px-[15px] '>
-                <div className='flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px]' onClick={()=>{handleCategory("trending")
-                    setCate("")}}>
-                    <MdWhatshot className='w-[30px] h-[30px] text-black' />
-                    <h3>Trending</h3>
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="villa"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("villa")}>
-                    <GiFamilyHouse className='w-[30px] h-[30px] text-black' />
-                    <h3>Villa</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="farmHouse"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("farmHouse")}>
-                    <FaTreeCity className='w-[30px] h-[30px] text-black' />
-                    <h3>Farm House</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="poolHouse"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("poolHouse")}>
-                    <MdOutlinePool className='w-[30px] h-[30px] text-black' />
-                    <h3>Pool House</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="rooms"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("rooms")}>
-                    <MdBedroomParent className='w-[30px] h-[30px] text-black' />
-                    <h3>Rooms</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="flat"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("flat")}>
-                    <BiBuildingHouse className='w-[30px] h-[30px] text-black' />
-                    <h3>Flat</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="pg"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("pg")}>
-                    <IoBedOutline className='w-[30px] h-[30px] text-black' />
-                    <h3>PG</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="cabin"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("cabin")}>
-                    <GiWoodCabin className='w-[30px] h-[30px] text-black' />
-                    <h3>Cabins</h3>
-
-                </div>
-
-                <div className={`flex items-center justify-center flex-col hover:border-b-[1px] border-[#a6a5a5] text-[13px] ${cate=="shops"?"border-b-[1px] border-[#a6a5a5]":""}`} onClick={()=>handleCategory("shops")}>
-                    <SiHomeassistantcommunitystore className='w-[30px] h-[30px] text-black' />
-                    <h3>Shops</h3>
-
-                </div>
-
-
             </div>
         </div>
+    )
+}
+
+function MenuBtn({ label, onClick, danger }) {
+    return (
+        <button onClick={onClick}
+            className='w-full px-4 py-2.5 text-left text-sm transition-colors duration-150'
+            style={{ color: danger ? '#dc2626' : '#1a0a00', fontFamily: "'Georgia', serif" }}
+            onMouseEnter={e => e.currentTarget.style.background = '#faf8f5'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            {label}
+        </button>
     )
 }
 
