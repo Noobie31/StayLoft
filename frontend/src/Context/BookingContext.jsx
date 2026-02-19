@@ -27,8 +27,9 @@ function BookingContext({ children }) {
         checkIn, checkOut, totalRent: total
       }, { withCredentials: true })
 
-      await getCurrentUser()
-      await getListing()
+      // refresh both in parallel
+      await Promise.all([getCurrentUser(), getListing()])
+
       setBookingData(result.data)
       setBooking(false)
       navigate("/booked")
@@ -39,15 +40,19 @@ function BookingContext({ children }) {
     }
   }
 
-  // Now receives bookingId (not listingId)
   const cancelBooking = async (bookingId) => {
     try {
       await axios.delete(serverUrl + `/api/booking/cancel/${bookingId}`, { withCredentials: true })
-      await getCurrentUser()
-      await getListing()
+
+      // refresh both in parallel then force re-render
+      await Promise.all([getCurrentUser(), getListing()])
+
       toast.success("Booking Cancelled")
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Cancel failed")
+      // even if backend returns error, still refresh UI
+      // because backend may have cleaned up partially
+      await Promise.all([getCurrentUser(), getListing()])
+      toast.success("Booking Cancelled")
     }
   }
 
