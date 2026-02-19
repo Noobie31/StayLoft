@@ -65,26 +65,31 @@ export const createBooking = async (req, res) => {
 
 export const cancelBooking = async (req, res) => {
     try {
-        let { id } = req.params  // bookingId
+        let { id } = req.params
 
         let booking = await Booking.findById(id)
+
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found" })
+            // Booking already gone — just clean up stale references
+            await Listing.updateMany(
+                { "bookedDates.bookingId": id },
+                { $pull: { bookedDates: { bookingId: id } } }
+            )
+            await User.updateMany(
+                { booking: id },
+                { $pull: { booking: id } }
+            )
+            return res.status(200).json({ message: "Booking cancelled successfully" })
         }
 
-        // Remove the date range from listing's bookedDates
         await Listing.findByIdAndUpdate(booking.listing, {
-            $pull: {
-                bookedDates: { bookingId: booking._id }
-            }
+            $pull: { bookedDates: { bookingId: booking._id } }
         })
 
-        // Remove booking from user's booking array
         await User.findByIdAndUpdate(booking.guest, {
             $pull: { booking: booking._id }
         })
 
-        // Delete the booking document
         await Booking.findByIdAndDelete(id)
 
         return res.status(200).json({ message: "Booking cancelled successfully" })
